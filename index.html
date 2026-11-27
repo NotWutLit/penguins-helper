@@ -9,7 +9,7 @@
     --ice: rgba(248, 251, 255, .78); --line: rgba(27, 27, 34, .08); }
   html, body { margin: 0; height: 100%; background: transparent; overflow: hidden;
     font: 13px/1.4 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--ink); user-select: none; }
-  body { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; }
+  body { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding-right: 16px; box-sizing: border-box; }
   button { font: inherit; color: inherit; }
   :focus-visible { outline: 2px solid var(--hood); outline-offset: 2px; }
 
@@ -68,7 +68,7 @@
   @keyframes mask-left { 0%, 78% { transform: translateX(-3px); } 100% { transform: none; } }
   body.walk-out .sway, body.walk-in .sway { animation-duration: .22s; }
   body.walk-out .prop, body.walk-in .prop { display: none !important; }
-  #peek { display: none; position: fixed; inset: 0; border: 2px solid var(--ink); border-right: 0; border-radius: 12px 0 0 12px;
+  #peek { display: none; position: fixed; right: 0; bottom: 0; width: 22px; height: 48px; box-sizing: border-box; border: 2px solid var(--ink); border-right: 0; border-radius: 12px 0 0 12px;
     background: var(--hood); cursor: pointer; padding: 0; }
   #peek span { position: absolute; left: 5px; top: 16px; width: 9px; height: 11px; border-radius: 50%; background: #fffaf2; }
   #peek span::after { content: ""; position: absolute; left: 2px; top: 3px; width: 3px; height: 4.5px; border-radius: 50%; background: var(--ink); }
@@ -249,8 +249,7 @@
   })();
   $('#close').onclick = toggle;
 
-  // Hide: close the panel, waddle off, then shrink to the peek tab. The tab brings it back.
-  // Order matters: resize only while the penguin is off-window, so nothing flashes.
+  // Hide: close the panel, waddle off the screen edge, leave the peek tab. The tab brings it back.
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const walkEnd = () => new Promise((done) => {
     if (reduced) return done();
@@ -270,7 +269,6 @@
   };
   $('#peek').onclick = async () => {
     cls.add('walk-in'); cls.remove('away');
-    await penguin.show();
     await walkEnd(); cls.remove('walk-in');
   };
   $('#quit').onclick = () => penguin.quit();
@@ -282,6 +280,15 @@
     const { list, error } = await penguin.paste();
     render(list); toast(error || 'Added');
     const p = $('#penguin'); p.classList.remove('bounce'); void p.offsetWidth; p.classList.add('bounce');
+  });
+
+  // Clicks pass through the empty, see-through parts of the window to whatever is behind it.
+  let through = true;
+  document.addEventListener('mousemove', (ev) => {
+    const hit = !!ev.target.closest('#penguin, #panel, #peek');
+    if (hit !== through) return;
+    through = !hit;
+    penguin.clickThrough(through);
   });
 
   penguin.list().then(render);

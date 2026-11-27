@@ -3,33 +3,30 @@ const fs = require('fs');
 const path = require('path');
 const { add } = require('./history');
 
-const SMALL = { width: 120, height: 120 };
-const BIG = { width: 320, height: 440 };
-const PEEK = { width: 22, height: 48 }; // tab left at the screen edge while the penguin is away
+// One fixed-size window in the bottom-right corner, flush with the screen edge. It never resizes:
+// resizing a transparent window on Windows flashes the previous frame in the corner.
+// Empty areas are click-through; the page turns clicks on only over the penguin, panel and peek tab.
+const SIZE = { width: 336, height: 440 };
 let win, open = false, list = [];
-
-
-function place(size, gap = 16) {
-  const wa = screen.getPrimaryDisplay().workArea;
-  win.setBounds({ x: wa.x + wa.width - size.width - gap, y: wa.y + wa.height - size.height, ...size });
-}
 
 app.whenReady().then(() => {
   // History is memory-only and starts empty each launch; remove the file older versions saved.
   fs.rmSync(path.join(app.getPath('userData'), 'history.json'), { force: true });
   win = new BrowserWindow({
-    ...SMALL, frame: false, transparent: true, resizable: false, alwaysOnTop: true,
+    ...SIZE, frame: false, transparent: true, resizable: false, alwaysOnTop: true,
     skipTaskbar: true, hasShadow: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
   });
-  place(SMALL);
+  const wa = screen.getPrimaryDisplay().workArea;
+  win.setPosition(wa.x + wa.width - SIZE.width, wa.y + wa.height - SIZE.height);
+  win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile('index.html');
 });
 
 ipcMain.handle('list', () => list);
-ipcMain.handle('hide', () => { open = false; place(PEEK, 0); });
-ipcMain.handle('show', () => place(SMALL));
-ipcMain.handle('toggle', () => { open = !open; place(open ? BIG : SMALL); return open; });
+ipcMain.handle('click-through', (_e, on) => win.setIgnoreMouseEvents(on, { forward: true }));
+ipcMain.handle('hide', () => { open = false; });
+ipcMain.handle('toggle', () => { open = !open; return open; });
 ipcMain.handle('paste', () => {
   const img = clipboard.readImage();
   if (!img.isEmpty()) {
