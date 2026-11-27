@@ -34,7 +34,7 @@ ipcMain.handle('paste', () => {
     list = add(list, { type: 'image', data: img.toDataURL() });
   } else {
     const text = clipboard.readText();
-    if (!text.trim()) return { list, error: 'Clipboard is empty' };
+    if (!text.trim()) return { list, error: 'Nothing to add. Copy something first.' };
     list = add(list, { type: 'text', text });
   }
   return { list };

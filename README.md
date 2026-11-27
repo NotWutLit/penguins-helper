@@ -4,9 +4,9 @@ A penguin that sits at the bottom-right of your screen and holds your clipboard.
 
 - Click the penguin to open its clipboard list.
 - Press **Ctrl+V** while the penguin is focused. Whatever is on the clipboard, text or an image (such as a Win+Shift+S screenshot), is kept in the list. Nothing is saved as a separate file.
-- Click an entry to copy it back to the clipboard. ✕ closes the panel, **Quit** closes the app.
+- Click an entry to copy it back to the clipboard. The chevron closes the panel, the power icon quits the app.
 
-The list lives in memory only. It starts empty every launch, and 🗑 deletes a single entry.
+The list lives in memory only. It starts empty every launch, and the trash icon deletes a single entry.
 
 ```
 npm install
