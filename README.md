@@ -13,15 +13,28 @@ A small penguin in a red hoodie that lives in the bottom-right corner of your Wi
 
 <img src="docs/clipboard.png" alt="The clipboard panel open above the penguin" width="320">
 
-## Install and run
+## Download
 
-You need Windows 10 or 11 and [Node.js](https://nodejs.org/) 18 or newer.
+Get the latest version from the **[Releases page](https://github.com/NotWutLit/penguins-helper/releases/latest)** (Windows 10 or 11):
+
+- **`Penguins-Helper-Setup-x.y.z.exe`**: installs the app for your user (no admin needed), adds it to the Start menu, and starts it with Windows. Uninstall from Settings → Apps.
+- **`Penguins-Helper-x.y.z-portable.exe`**: no install, just run it.
+
+The app isn't code-signed, so Windows SmartScreen may say it "protected your PC". Click **More info → Run anyway**.
+
+Once it's running, the penguin lives in the bottom-right corner and has an icon in the system tray (it may be under the **^** arrow). Right-click the tray icon to show or hide the penguin, turn **Start with Windows** on or off, or quit.
+
+## Run from source
+
+You need [Node.js](https://nodejs.org/) 18 or newer.
 
 ```
 git clone https://github.com/NotWutLit/penguins-helper.git
 cd penguins-helper
 npm install
-npm start
+npm start          # run it
+npm test           # run the tests
+npm run dist       # build the installer and portable exe into dist/
 ```
 
 ## Using it
@@ -34,7 +47,9 @@ npm start
 | Delete an entry | Hover it, click the trash icon |
 | Hide the penguin | Open the panel, click the crossed-out eye |
 | Bring it back | Click the red tab at the right screen edge |
-| Quit | Open the panel, click the power icon |
+| Bring it back from the tray | Click the tray icon |
+| Start with Windows on or off | Right-click the tray icon |
+| Quit | Open the panel and click the power icon, or right-click the tray icon |
 
 ## Privacy
 
@@ -48,11 +63,12 @@ Penguin's Helper is built to stay out of trouble with kernel anti-cheat such as 
 
 | File | What it does |
 |---|---|
-| `main.js` | Electron main process: the always-on-top window, click-through, clipboard reads and writes |
+| `main.js` | Electron main process: the always-on-top window, click-through, tray icon, start with Windows, clipboard reads and writes |
 | `preload.js` | The small API the page can call (`window.penguin`) |
 | `index.html` | The penguin (inline SVG), its animations, and the clipboard panel |
 | `history.js` | Adds entries to the clipboard list (newest first, no duplicates, capped at 50) |
 | `test.js` | Tests for `history.js`, run with `npm test` |
+| `build/` | App and tray icon |
 
 ## Credits
 

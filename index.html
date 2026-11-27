@@ -291,6 +291,13 @@
     penguin.clickThrough(through);
   });
 
+  // Tray menu: show brings a hidden penguin back, hide sends it away (ignored mid-walk).
+  penguin.onTray((cmd) => {
+    if (cls.contains('walk-in') || cls.contains('walk-out') || cls.contains('leaving')) return;
+    if (cmd === 'show' && cls.contains('away')) $('#peek').onclick();
+    if (cmd === 'hide' && !cls.contains('away')) $('#hide').onclick();
+  });
+
   penguin.list().then(render);
 </script>
 </body>
