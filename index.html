@@ -24,6 +24,12 @@
   #penguin { width: 110px; height: 110px; cursor: pointer; border: 0; background: none; padding: 0; }
   #penguin.bounce { animation: bounce .35s; }
   @keyframes bounce { 50% { transform: translateY(-12px); } }
+  /* idle: gentle side-to-side rock from the feet, plus a blink every few seconds */
+  .sway { transform-box: view-box; transform-origin: 50px 94px; animation: sway 3.2s ease-in-out infinite alternate; }
+  @keyframes sway { from { transform: rotate(-2.5deg) scaleY(1); } to { transform: rotate(2.5deg) scaleY(1.02); } }
+  .eye { transform-box: fill-box; transform-origin: center; animation: blink 4.7s infinite; }
+  @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.1); } }
+  @media (prefers-reduced-motion: reduce) { .sway, .eye, #penguin.bounce { animation: none; } }
 </style>
 </head>
 <body>
@@ -40,6 +46,7 @@
         <filter id="crayon"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter>
       </defs>
       <ellipse cx="50" cy="97" rx="24" ry="2.5" fill="#000" opacity=".15"/>
+      <g class="sway">
       <g filter="url(#crayon)" stroke="#1b1b22" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
         <!-- belly peeking under the hoodie -->
         <path d="M29 76 Q29 92 50 92 Q71 92 71 76 Z" fill="#2b2d3a"/>
@@ -62,11 +69,12 @@
         <path d="M44.5 60 L43.5 72 M55.5 60 L56.5 70" fill="none" stroke="#c9d3df" stroke-width="2"/>
       </g>
       <!-- face details stay crisp -->
-      <ellipse cx="40" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
-      <ellipse cx="60" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
+      <ellipse class="eye" cx="40" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
+      <ellipse class="eye" cx="60" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
       <ellipse cx="50" cy="47" rx="3.6" ry="2.6" fill="#f7d417" stroke="#1b1b22" stroke-width=".9"/>
       <path d="M46.8 47 H53.2" stroke="#1b1b22" stroke-width=".6"/>
       <path d="M34 50.5 l1.2 -2 M37 51 l1.2 -2 M62 51 l1.2 -2 M65 50.5 l1.2 -2" stroke="#e0605a" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
     </svg>
   </button>
 <script>
