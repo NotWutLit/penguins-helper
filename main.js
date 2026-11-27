@@ -7,16 +7,6 @@ const SMALL = { width: 120, height: 120 };
 const BIG = { width: 320, height: 440 };
 let win, open = false, list = [];
 
-const historyFile = () => path.join(app.getPath('userData'), 'history.json');
-
-function load() {
-  try { list = JSON.parse(fs.readFileSync(historyFile(), 'utf8')).filter((e) => e.text || e.data); } catch { list = []; }
-}
-function save() {
-  const tmp = historyFile() + '.tmp'; // write-then-rename so a crash can't corrupt history
-  fs.writeFileSync(tmp, JSON.stringify(list));
-  fs.renameSync(tmp, historyFile());
-}
 
 function place(size) {
   const wa = screen.getPrimaryDisplay().workArea;
@@ -24,7 +14,8 @@ function place(size) {
 }
 
 app.whenReady().then(() => {
-  load();
+  // History is memory-only and starts empty each launch; remove the file older versions saved.
+  fs.rmSync(path.join(app.getPath('userData'), 'history.json'), { force: true });
   win = new BrowserWindow({
     ...SMALL, frame: false, transparent: true, resizable: false, alwaysOnTop: true,
     skipTaskbar: true, hasShadow: false,
@@ -39,14 +30,13 @@ ipcMain.handle('toggle', () => { open = !open; place(open ? BIG : SMALL); return
 ipcMain.handle('paste', () => {
   const img = clipboard.readImage();
   if (!img.isEmpty()) {
-    // shortcut: images live as PNG data URLs in history.json (can reach tens of MB at 50 big screenshots); move to files if it gets slow.
+    // shortcut: images are held in memory as PNG data URLs (50 big screenshots can use ~100MB RAM); lower the cap if that matters.
     list = add(list, { type: 'image', data: img.toDataURL() });
   } else {
     const text = clipboard.readText();
     if (!text.trim()) return { list, error: 'Clipboard is empty' };
     list = add(list, { type: 'text', text });
   }
-  save();
   return { list };
 });
 ipcMain.handle('copy', (_e, i) => {
@@ -56,4 +46,5 @@ ipcMain.handle('copy', (_e, i) => {
   clipboard.writeImage(nativeImage.createFromDataURL(e.data));
   return null;
 });
+ipcMain.handle('remove', (_e, i) => { list.splice(i, 1); return list; });
 ipcMain.handle('quit', () => app.quit());

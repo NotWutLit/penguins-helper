@@ -17,6 +17,8 @@
   #items { overflow-y: auto; flex: 1; padding: 4px; }
   .item { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 8px; cursor: pointer; }
   .item:hover, .item:focus { background: #dde9f3; outline: none; }
+  .del { border: 0; background: none; cursor: pointer; font-size: 13px; opacity: .45; flex: none; }
+  .item:hover .del, .item:focus-within .del { opacity: 1; }
   .item span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .item img { max-width: 200px; max-height: 70px; border-radius: 4px; flex: 1; object-fit: contain; object-position: left; }
   #hint, #toast { color: #5a6b7b; padding: 8px 10px; }
@@ -156,6 +158,10 @@
         img.src = e.data; img.alt = 'Copied image';
         row.append(img);
       }
+      const del = document.createElement('button');
+      del.className = 'del'; del.textContent = '🗑'; del.title = 'Delete'; del.setAttribute('aria-label', 'Delete');
+      del.onclick = async (ev) => { ev.stopPropagation(); render(await penguin.remove(i)); toast('Deleted'); };
+      row.append(del);
       const copy = async () => toast((await penguin.copy(i)) || 'Copied!');
       row.onclick = copy;
       row.onkeydown = (ev) => { if (ev.key === 'Enter') copy(); };

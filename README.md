@@ -6,7 +6,7 @@ A penguin that sits at the bottom-right of your screen and holds your clipboard.
 - Press **Ctrl+V** while the penguin is focused. Whatever is on the clipboard, text or an image (such as a Win+Shift+S screenshot), is kept in the list. Nothing is saved as a separate file.
 - Click an entry to copy it back to the clipboard. ✕ closes the panel, **Quit** closes the app.
 
-The history is stored in Electron's userData folder (`%APPDATA%\penguins-helper\history.json`).
+The list lives in memory only. It starts empty every launch, and 🗑 deletes a single entry.
 
 ```
 npm install
