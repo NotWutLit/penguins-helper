@@ -52,10 +52,22 @@
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
   #penguin { width: 110px; height: 110px; cursor: pointer; border: 0; background: none; padding: 0; }
   /* walking away: waddle fast and slide off to the right, then only the peek tab is left */
-  body.walk-out #penguin { animation: walk-out 1.3s ease-in forwards; }
-  body.walk-in #penguin { animation: walk-out 1.3s ease-out reverse; }
+  /* turn first (face slides toward the exit, white mask a bit less for depth), then walk */
+  body.walk-out #penguin { animation: walk-out 1.8s ease-in forwards; }
+  body.walk-out .face { animation: face-right 1.8s forwards; }
+  body.walk-out .mask { animation: mask-right 1.8s forwards; }
+  @keyframes walk-out { 0%, 25% { transform: none; } 10% { transform: translateY(-5px); } 100% { transform: translateX(140px); } }
+  @keyframes face-right { 0% { transform: none; } 20%, 100% { transform: translateX(7px); } }
+  @keyframes mask-right { 0% { transform: none; } 20%, 100% { transform: translateX(3px); } }
+  /* coming back: walk in facing left, then turn to the front */
+  body.walk-in #penguin { animation: walk-in 1.8s ease-out; }
+  body.walk-in .face { animation: face-left 1.8s; }
+  body.walk-in .mask { animation: mask-left 1.8s; }
+  @keyframes walk-in { 0% { transform: translateX(140px); } 75%, 100% { transform: none; } 88% { transform: translateY(-5px); } }
+  @keyframes face-left { 0%, 78% { transform: translateX(-7px); } 100% { transform: none; } }
+  @keyframes mask-left { 0%, 78% { transform: translateX(-3px); } 100% { transform: none; } }
   body.walk-out .sway, body.walk-in .sway { animation-duration: .22s; }
-  @keyframes walk-out { to { transform: translateX(140px); } }
+  body.walk-out .prop, body.walk-in .prop { display: none !important; }
   #peek { display: none; position: fixed; inset: 0; border: 2px solid var(--ink); border-right: 0; border-radius: 12px 0 0 12px;
     background: var(--hood); cursor: pointer; padding: 0; }
   #peek span { position: absolute; left: 5px; top: 16px; width: 9px; height: 11px; border-radius: 50%; background: #fffaf2; }
@@ -90,7 +102,7 @@
   .hop { animation: hop 6s ease-in-out infinite; }
   @keyframes hop { 0%, 30% { transform: translate(0, 0); } 37% { transform: translate(-4px, -7px); } 44%, 75% { transform: translate(-8px, 0); } 82% { transform: translate(-4px, -7px); } 89%, 100% { transform: translate(0, 0); } }
   @media (prefers-reduced-motion: reduce) {
-    .sway, .eye, #penguin.bounce, body.walk-out #penguin, body.walk-in #penguin, .prop, .page, .glow, .sym, .tap, .hop { animation: none !important; }
+    .sway, .eye, #penguin.bounce, body.walk-out #penguin, body.walk-in #penguin, .face, .mask, .prop, .page, .glow, .sym, .tap, .hop { animation: none !important; }
     .sym { opacity: 1; }
   }
 </style>
@@ -131,12 +143,13 @@
         <!-- head inside the hood -->
         <ellipse cx="50" cy="40" rx="24" ry="21.5" fill="#2b2d3a"/>
         <!-- face with the widow's peak -->
-        <path d="M50 29 Q44 22 37 26 Q28 31 29.5 43 Q32 57 50 59 Q68 57 70.5 43 Q72 31 63 26 Q56 22 50 29 Z" fill="#fffaf2" stroke="none"/>
+        <path class="mask" d="M50 29 Q44 22 37 26 Q28 31 29.5 43 Q32 57 50 59 Q68 57 70.5 43 Q72 31 63 26 Q56 22 50 29 Z" fill="#fffaf2" stroke="none"/>
         <!-- drawstrings -->
         <path d="M44.5 60 L43.5 72 M55.5 60 L56.5 70" fill="none" stroke-width="4.2"/>
         <path d="M44.5 60 L43.5 72 M55.5 60 L56.5 70" fill="none" stroke="#c9d3df" stroke-width="2"/>
       </g>
       <!-- face details stay crisp -->
+      <g class="face">
       <g class="eyes">
         <ellipse class="eye" cx="40" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
         <ellipse class="eye" cx="60" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
@@ -144,6 +157,7 @@
       <ellipse cx="50" cy="47" rx="3.6" ry="2.6" fill="#f7d417" stroke="#1b1b22" stroke-width=".9"/>
       <path d="M46.8 47 H53.2" stroke="#1b1b22" stroke-width=".6"/>
       <path d="M34 50.5 l1.2 -2 M37 51 l1.2 -2 M62 51 l1.2 -2 M65 50.5 l1.2 -2" stroke="#e0605a" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
 
       <!-- activity props: shown one at a time by data-act on #penguin -->
       <g class="prop book" stroke="#1b1b22" stroke-width="1.6" stroke-linejoin="round">
