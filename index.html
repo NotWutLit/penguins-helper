@@ -33,17 +33,40 @@
     <div id="toast" role="status"></div>
   </div>
   <button id="penguin" title="Click me, then Ctrl+V" aria-label="Open clipboard">
+    <!-- Based on the user's own hoodie-penguin tote bag drawing. -->
     <svg viewBox="0 0 100 100" width="110" height="110" aria-hidden="true">
-      <ellipse cx="50" cy="94" rx="26" ry="4" fill="#000" opacity=".15"/>
-      <ellipse cx="50" cy="58" rx="30" ry="34" fill="#1d2b3a"/>
-      <ellipse cx="50" cy="64" rx="20" ry="26" fill="#fff"/>
-      <ellipse cx="20" cy="62" rx="7" ry="16" fill="#1d2b3a" transform="rotate(15 20 62)"/>
-      <ellipse cx="80" cy="62" rx="7" ry="16" fill="#1d2b3a" transform="rotate(-15 80 62)"/>
-      <circle cx="41" cy="40" r="4" fill="#fff"/><circle cx="59" cy="40" r="4" fill="#fff"/>
-      <circle cx="42" cy="41" r="2" fill="#000"/><circle cx="58" cy="41" r="2" fill="#000"/>
-      <path d="M44 48 L56 48 L50 55 Z" fill="#f5a623"/>
-      <ellipse cx="40" cy="91" rx="8" ry="3.5" fill="#f5a623"/>
-      <ellipse cx="60" cy="91" rx="8" ry="3.5" fill="#f5a623"/>
+      <defs>
+        <!-- slight wobble so outlines feel hand-drawn like crayon -->
+        <filter id="crayon"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter>
+      </defs>
+      <ellipse cx="50" cy="97" rx="24" ry="2.5" fill="#000" opacity=".15"/>
+      <g filter="url(#crayon)" stroke="#1b1b22" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+        <!-- belly peeking under the hoodie -->
+        <path d="M29 76 Q29 92 50 92 Q71 92 71 76 Z" fill="#2b2d3a"/>
+        <path d="M35 80 Q36 90 50 90 Q64 90 65 80 Z" fill="#fffaf2" stroke="none"/>
+        <!-- feet -->
+        <ellipse cx="40" cy="92" rx="6.5" ry="3.8" fill="#f39a1e" transform="rotate(-12 40 92)"/>
+        <ellipse cx="61" cy="91.5" rx="6.5" ry="3.8" fill="#f39a1e" transform="rotate(12 61 91.5)"/>
+        <!-- hoodie body -->
+        <path d="M27 55 Q19 68 24 81 Q50 86 76 81 Q81 68 73 55 Z" fill="#e2312a"/>
+        <path d="M30 63 Q28 72 31 79 M70 63 Q72 72 69 79" fill="none" stroke-width="1.6"/>
+        <!-- hood -->
+        <ellipse cx="50" cy="37" rx="31" ry="28" fill="#e2312a"/>
+        <path d="M71 16 Q81 27 79 46" fill="none" stroke-width="1.4"/>
+        <!-- head inside the hood -->
+        <ellipse cx="50" cy="40" rx="24" ry="21.5" fill="#2b2d3a"/>
+        <!-- face with the widow's peak -->
+        <path d="M50 29 Q44 22 37 26 Q28 31 29.5 43 Q32 57 50 59 Q68 57 70.5 43 Q72 31 63 26 Q56 22 50 29 Z" fill="#fffaf2" stroke="none"/>
+        <!-- drawstrings -->
+        <path d="M44.5 60 L43.5 72 M55.5 60 L56.5 70" fill="none" stroke-width="4.2"/>
+        <path d="M44.5 60 L43.5 72 M55.5 60 L56.5 70" fill="none" stroke="#c9d3df" stroke-width="2"/>
+      </g>
+      <!-- face details stay crisp -->
+      <ellipse cx="40" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
+      <ellipse cx="60" cy="41.5" rx="2" ry="2.8" fill="#1b1b22"/>
+      <ellipse cx="50" cy="47" rx="3.6" ry="2.6" fill="#f7d417" stroke="#1b1b22" stroke-width=".9"/>
+      <path d="M46.8 47 H53.2" stroke="#1b1b22" stroke-width=".6"/>
+      <path d="M34 50.5 l1.2 -2 M37 51 l1.2 -2 M62 51 l1.2 -2 M65 50.5 l1.2 -2" stroke="#e0605a" stroke-width="1.6" stroke-linecap="round"/>
     </svg>
   </button>
 <script>
