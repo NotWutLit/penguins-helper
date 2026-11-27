@@ -2,30 +2,12 @@ const { app, BrowserWindow, ipcMain, clipboard, nativeImage, screen } = require(
 const fs = require('fs');
 const path = require('path');
 const { add } = require('./history');
-const google = require('./google');
-const { dueReminders } = require('./reminders');
 
 const SMALL = { width: 120, height: 120 };
 const BIG = { width: 320, height: 440 };
 const PEEK = { width: 22, height: 48 }; // tab left at the screen edge while the penguin is away
-const BUBBLE = { width: 280, height: 220 }; // penguin plus a reminder bubble above it
-let win, open = false, away = false, list = [];
-let upcoming = [], shown = new Set(); // shown keys are memory-only: a restart may repeat today's reminders
+let win, open = false, list = [];
 
-async function refreshGoogle() {
-  if (!google.connected()) return;
-  try { upcoming = await google.upcoming(); }
-  catch (e) {
-    console.error('google:', e.message); // offline or a Google hiccup: keep the last list
-    if (!google.connected()) { upcoming = []; win.webContents.send('google', false); }
-  }
-}
-function checkReminders() {
-  for (const r of dueReminders(upcoming, new Date(), shown)) {
-    shown.add(r.key);
-    win.webContents.send('remind', { label: r.label, title: r.title });
-  }
-}
 
 function place(size, gap = 16) {
   const wa = screen.getPrimaryDisplay().workArea;
@@ -42,22 +24,11 @@ app.whenReady().then(() => {
   });
   place(SMALL);
   win.loadFile('index.html');
-  win.webContents.once('did-finish-load', () => refreshGoogle().then(checkReminders));
-  setInterval(refreshGoogle, 5 * 60 * 1000);
-  setInterval(checkReminders, 30 * 1000);
 });
 
 ipcMain.handle('list', () => list);
-ipcMain.handle('hide', () => { open = false; away = true; place(PEEK, 0); });
-ipcMain.handle('show', () => { away = false; place(SMALL); });
-ipcMain.handle('bubble', (_e, on) => { if (!open && !away) place(on ? BUBBLE : SMALL); });
-ipcMain.handle('google-status', () => google.connected());
-ipcMain.handle('google-connect', async () => {
-  try { await google.connect(); } catch (e) { return { error: e.message }; }
-  await refreshGoogle(); checkReminders();
-  return {};
-});
-ipcMain.handle('google-disconnect', () => { google.disconnect(); upcoming = []; });
+ipcMain.handle('hide', () => { open = false; place(PEEK, 0); });
+ipcMain.handle('show', () => place(SMALL));
 ipcMain.handle('toggle', () => { open = !open; place(open ? BIG : SMALL); return open; });
 ipcMain.handle('paste', () => {
   const img = clipboard.readImage();
