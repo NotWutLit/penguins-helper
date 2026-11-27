@@ -8,15 +8,15 @@
   html, body { margin: 0; height: 100%; background: transparent; overflow: hidden;
     font: 13px system-ui, sans-serif; user-select: none; }
   body { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; }
-  #panel { display: none; width: 300px; height: 300px; margin: 0 4px 4px 0; background: #f4f8fb;
+  #panel { display: none; width: 300px; height: 300px; margin: 0 4px 4px 0; background: rgba(244, 248, 251, .6);
     border: 2px solid #1d2b3a; border-radius: 12px; box-sizing: border-box; flex-direction: column; }
   body.open #panel { display: flex; }
   header { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;
-    border-bottom: 1px solid #cfdbe5; font-weight: 600; color: #1d2b3a; }
+    border-bottom: 1px solid rgba(29, 43, 58, .15); font-weight: 600; color: #1d2b3a; }
   header button { border: 0; background: none; font-size: 15px; cursor: pointer; color: #1d2b3a; }
   #items { overflow-y: auto; flex: 1; padding: 4px; }
   .item { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 8px; cursor: pointer; }
-  .item:hover, .item:focus { background: #dde9f3; outline: none; }
+  .item:hover, .item:focus { background: rgba(221, 233, 243, .7); outline: none; }
   .del { border: 0; background: none; cursor: pointer; font-size: 13px; opacity: .45; flex: none; }
   .item:hover .del, .item:focus-within .del { opacity: 1; }
   .item span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
