@@ -4,7 +4,7 @@ A penguin that sits at the bottom-right of your screen and holds your clipboard.
 
 - Click the penguin to open its clipboard list.
 - Press **Ctrl+V** while the penguin is focused. Text is kept in the list. Images, such as a Win+Shift+S screenshot, are saved as PNG files to `Pictures\Penguin's Helper` and kept in the list.
-- Click an entry to copy it back to the clipboard. 📁 shows the image file in Explorer. ✕ quits.
+- Click an entry to copy it back to the clipboard. 📁 shows the image file in Explorer. ✕ closes the panel, **Quit** closes the app.
 
 The history is stored in Electron's userData folder (`%APPDATA%\penguins-helper\history.json`).
 

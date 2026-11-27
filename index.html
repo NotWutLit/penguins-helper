@@ -29,7 +29,7 @@
 </head>
 <body>
   <div id="panel">
-    <header>Clipboard <button id="quit" title="Quit" aria-label="Quit">✕</button></header>
+    <header>Clipboard <span><button id="quit" title="Quit Penguin's Helper">Quit</button> <button id="close" title="Close panel" aria-label="Close panel">✕</button></span></header>
     <div id="items"></div>
     <div id="toast" role="status"></div>
   </div>
@@ -75,10 +75,12 @@
     });
   }
 
-  $('#penguin').onclick = async () => {
+  const toggle = async () => {
     document.body.classList.toggle('open', await penguin.toggle());
     toast('');
   };
+  $('#penguin').onclick = toggle;
+  $('#close').onclick = toggle;
   $('#quit').onclick = () => penguin.quit();
 
   // Only fires while this window has focus: no global keyboard hooks.
