@@ -5,12 +5,13 @@ const { add } = require('./history');
 
 const SMALL = { width: 120, height: 120 };
 const BIG = { width: 320, height: 440 };
+const PEEK = { width: 22, height: 48 }; // tab left at the screen edge while the penguin is away
 let win, open = false, list = [];
 
 
-function place(size) {
+function place(size, gap = 16) {
   const wa = screen.getPrimaryDisplay().workArea;
-  win.setBounds({ x: wa.x + wa.width - size.width - 16, y: wa.y + wa.height - size.height, ...size });
+  win.setBounds({ x: wa.x + wa.width - size.width - gap, y: wa.y + wa.height - size.height, ...size });
 }
 
 app.whenReady().then(() => {
@@ -26,6 +27,8 @@ app.whenReady().then(() => {
 });
 
 ipcMain.handle('list', () => list);
+ipcMain.handle('hide', () => { open = false; place(PEEK, 0); });
+ipcMain.handle('show', () => place(SMALL));
 ipcMain.handle('toggle', () => { open = !open; place(open ? BIG : SMALL); return open; });
 ipcMain.handle('paste', () => {
   const img = clipboard.readImage();

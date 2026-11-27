@@ -51,6 +51,18 @@
     background: var(--ink); color: #fff; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
   #penguin { width: 110px; height: 110px; cursor: pointer; border: 0; background: none; padding: 0; }
+  /* walking away: waddle fast and slide off to the right, then only the peek tab is left */
+  body.walk-out #penguin { animation: walk-out 1.3s ease-in forwards; }
+  body.walk-in #penguin { animation: walk-out 1.3s ease-out reverse; }
+  body.walk-out .sway, body.walk-in .sway { animation-duration: .22s; }
+  @keyframes walk-out { to { transform: translateX(140px); } }
+  #peek { display: none; position: fixed; inset: 0; border: 2px solid var(--ink); border-right: 0; border-radius: 12px 0 0 12px;
+    background: var(--hood); cursor: pointer; padding: 0; }
+  #peek span { position: absolute; left: 5px; top: 16px; width: 9px; height: 11px; border-radius: 50%; background: #fffaf2; }
+  #peek span::after { content: ""; position: absolute; left: 2px; top: 3px; width: 3px; height: 4.5px; border-radius: 50%; background: var(--ink); }
+  #peek:hover { filter: brightness(1.1); }
+  body.away #penguin, body.away #panel { display: none; }
+  body.away #peek { display: block; }
   #penguin.bounce { animation: bounce .35s; }
   @keyframes bounce { 50% { transform: translateY(-12px); } }
   /* idle: gentle side-to-side rock from the feet, plus a blink every few seconds */
@@ -78,7 +90,7 @@
   .hop { animation: hop 6s ease-in-out infinite; }
   @keyframes hop { 0%, 30% { transform: translate(0, 0); } 37% { transform: translate(-4px, -7px); } 44%, 75% { transform: translate(-8px, 0); } 82% { transform: translate(-4px, -7px); } 89%, 100% { transform: translate(0, 0); } }
   @media (prefers-reduced-motion: reduce) {
-    .sway, .eye, #penguin.bounce, .prop, .page, .glow, .sym, .tap, .hop { animation: none !important; }
+    .sway, .eye, #penguin.bounce, body.walk-out #penguin, body.walk-in #penguin, .prop, .page, .glow, .sym, .tap, .hop { animation: none !important; }
     .sym { opacity: 1; }
   }
 </style>
@@ -87,6 +99,7 @@
   <div id="panel">
     <header>
       <h1>Clipboard</h1><span id="count"></span>
+      <button class="icon" id="hide" title="Send the penguin away" aria-label="Hide penguin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-2.6 3.6M6.6 6.6C4.4 8 2.8 10.1 2 12c1 2.5 5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
       <button class="icon" id="quit" title="Quit Penguin's Helper" aria-label="Quit Penguin's Helper"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></button>
       <button class="icon" id="close" title="Close" aria-label="Close clipboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
     </header>
@@ -171,6 +184,7 @@
       </g>
     </svg>
   </button>
+  <button id="peek" title="Bring the penguin back" aria-label="Show penguin"><span></span></button>
 <script>
   const $ = (s) => document.querySelector(s);
   let toastTimer;
@@ -220,6 +234,31 @@
     setTimeout(nextAct, 9000 + Math.random() * 9000);
   })();
   $('#close').onclick = toggle;
+
+  // Hide: close the panel, waddle off, then shrink to the peek tab. The tab brings it back.
+  // Order matters: resize only while the penguin is off-window, so nothing flashes.
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const walkEnd = () => new Promise((done) => {
+    if (reduced) return done();
+    const p = $('#penguin');
+    p.addEventListener('animationend', function end(ev) {
+      if (ev.target !== p) return; // ignore the svg's own animations bubbling up
+      p.removeEventListener('animationend', end); done();
+    });
+  });
+  const cls = document.body.classList;
+  $('#hide').onclick = async () => {
+    if (cls.contains('open')) await toggle();
+    $('#penguin').classList.remove('bounce'); // its animation would override the walk
+    cls.add('walk-out'); await walkEnd();
+    await penguin.hide();
+    cls.add('away'); cls.remove('walk-out');
+  };
+  $('#peek').onclick = async () => {
+    cls.add('walk-in'); cls.remove('away');
+    await penguin.show();
+    await walkEnd(); cls.remove('walk-in');
+  };
   $('#quit').onclick = () => penguin.quit();
 
   // Only fires while this window has focus: no global keyboard hooks.
