@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, clipboard, nativeImage, screen, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard, nativeImage, screen } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { add } = require('./history');
@@ -8,10 +8,9 @@ const BIG = { width: 320, height: 440 };
 let win, open = false, list = [];
 
 const historyFile = () => path.join(app.getPath('userData'), 'history.json');
-const shotsDir = () => path.join(app.getPath('pictures'), "Penguin's Helper");
 
 function load() {
-  try { list = JSON.parse(fs.readFileSync(historyFile(), 'utf8')); } catch { list = []; }
+  try { list = JSON.parse(fs.readFileSync(historyFile(), 'utf8')).filter((e) => e.text || e.data); } catch { list = []; }
 }
 function save() {
   const tmp = historyFile() + '.tmp'; // write-then-rename so a crash can't corrupt history
@@ -22,11 +21,6 @@ function save() {
 function place(size) {
   const wa = screen.getPrimaryDisplay().workArea;
   win.setBounds({ x: wa.x + wa.width - size.width - 16, y: wa.y + wa.height - size.height, ...size });
-}
-
-function stamp() {
-  const d = new Date(), p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
 }
 
 app.whenReady().then(() => {
@@ -45,11 +39,8 @@ ipcMain.handle('toggle', () => { open = !open; place(open ? BIG : SMALL); return
 ipcMain.handle('paste', () => {
   const img = clipboard.readImage();
   if (!img.isEmpty()) {
-    fs.mkdirSync(shotsDir(), { recursive: true });
-    let file = path.join(shotsDir(), `screenshot-${stamp()}.png`);
-    for (let i = 2; fs.existsSync(file); i++) file = path.join(shotsDir(), `screenshot-${stamp()}-${i}.png`);
-    fs.writeFileSync(file, img.toPNG());
-    list = add(list, { type: 'image', path: file });
+    // shortcut: images live as PNG data URLs in history.json (can reach tens of MB at 50 big screenshots); move to files if it gets slow.
+    list = add(list, { type: 'image', data: img.toDataURL() });
   } else {
     const text = clipboard.readText();
     if (!text.trim()) return { list, error: 'Clipboard is empty' };
@@ -62,9 +53,7 @@ ipcMain.handle('copy', (_e, i) => {
   const e = list[i];
   if (!e) return 'Not found';
   if (e.type === 'text') { clipboard.writeText(e.text); return null; }
-  if (!fs.existsSync(e.path)) return 'Image file was moved or deleted';
-  clipboard.writeImage(nativeImage.createFromPath(e.path));
+  clipboard.writeImage(nativeImage.createFromDataURL(e.data));
   return null;
 });
-ipcMain.handle('reveal', (_e, i) => { if (list[i]?.path) shell.showItemInFolder(list[i].path); });
 ipcMain.handle('quit', () => app.quit());

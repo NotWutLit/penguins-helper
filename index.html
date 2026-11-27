@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
 <title>Penguin's Helper</title>
 <style>
   html, body { margin: 0; height: 100%; background: transparent; overflow: hidden;
@@ -19,7 +19,6 @@
   .item:hover, .item:focus { background: #dde9f3; outline: none; }
   .item span { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .item img { max-width: 200px; max-height: 70px; border-radius: 4px; flex: 1; object-fit: contain; object-position: left; }
-  .item button { border: 0; background: none; cursor: pointer; font-size: 14px; }
   #hint, #toast { color: #5a6b7b; padding: 8px 10px; }
   #toast { min-height: 1em; padding-top: 0; }
   #penguin { width: 110px; height: 110px; cursor: pointer; border: 0; background: none; padding: 0; }
@@ -62,11 +61,8 @@
         const s = document.createElement('span'); s.textContent = e.text; row.append(s);
       } else {
         const img = document.createElement('img');
-        img.src = 'file:///' + e.path.replace(/\\/g, '/'); img.alt = 'Screenshot';
-        const b = document.createElement('button'); b.textContent = '📁'; b.title = 'Show in folder';
-        b.setAttribute('aria-label', 'Show in folder');
-        b.onclick = (ev) => { ev.stopPropagation(); penguin.reveal(i); };
-        row.append(img, b);
+        img.src = e.data; img.alt = 'Copied image';
+        row.append(img);
       }
       const copy = async () => toast((await penguin.copy(i)) || 'Copied!');
       row.onclick = copy;
