@@ -9,5 +9,7 @@
   },
   "devDependencies": {
     "electron": "^39.0.0"
-  }
+  },
+  "license": "MIT",
+  "repository": "github:NotWutLit/penguins-helper"
 }

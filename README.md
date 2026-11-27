@@ -1,27 +1,63 @@
 # Penguin's Helper
 
-A penguin that sits at the bottom-right of your screen and holds your clipboard.
+A small penguin in a red hoodie that lives in the bottom-right corner of your Windows desktop and holds onto things you copy.
 
-- Click the penguin to open its clipboard list.
-- Press **Ctrl+V** while the penguin is focused. Whatever is on the clipboard, text or an image (such as a Win+Shift+S screenshot), is kept in the list. Nothing is saved as a separate file.
-- Click an entry to copy it back to the clipboard. The chevron closes the panel, the power icon quits the app. The crossed-out eye sends the penguin away so it stops covering things; it leaves a small red tab at the screen edge, and clicking the tab brings it back.
+![The penguin chilling, reading, coding and playing chess](docs/activities.png)
 
-The list lives in memory only. It starts empty every launch, and the trash icon deletes a single entry.
+## Features
+
+- **Clipboard keeper.** Click the penguin, press <kbd>Ctrl</kbd>+<kbd>V</kbd>, and whatever you copied (text, or an image like a <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> screenshot) is added to its list. Click an entry to copy it back. Hover and click the trash icon to delete it.
+- **Keeps you company.** Every 9 to 18 seconds it picks something to do: reading a book, coding on a laptop, playing chess, or just rocking and blinking.
+- **Gets out of the way.** The crossed-out eye in the panel sends the penguin waddling off the screen. A small red tab with one eye stays at the screen edge. Click it and the penguin walks back.
+- **Click-through.** Only the penguin and its panel catch the mouse. Everything around them passes clicks to the windows behind.
+
+<img src="docs/clipboard.png" alt="The clipboard panel open above the penguin" width="320">
+
+## Install and run
+
+You need Windows 10 or 11 and [Node.js](https://nodejs.org/) 18 or newer.
 
 ```
+git clone https://github.com/NotWutLit/penguins-helper.git
+cd penguins-helper
 npm install
 npm start
-npm test
 ```
 
-## Anti-cheat safety rule (Valorant / Vanguard)
+## Using it
 
-This app has to stay boring to anti-cheat software. No tool may ever add any of these:
+| To | Do this |
+|---|---|
+| Open or close the clipboard | Click the penguin |
+| Add what you copied | Click the penguin, then press <kbd>Ctrl</kbd>+<kbd>V</kbd> |
+| Copy an entry back | Click the entry |
+| Delete an entry | Hover it, click the trash icon |
+| Hide the penguin | Open the panel, click the crossed-out eye |
+| Bring it back | Click the red tab at the right screen edge |
+| Quit | Open the panel, click the power icon |
 
-- native modules or automation libraries (robotjs, nut.js, iohook, AutoHotkey, ...)
-- global hotkeys or low-level keyboard or mouse hooks
-- simulated input
-- screen capture APIs (`desktopCapturer`, etc.)
-- injection into other processes or reading their memory
+## Privacy
 
-Tools only act on what the user hands the penguin while its own window has focus.
+The clipboard list lives in memory only. It is never written to disk, starts empty every launch, and the app makes no network requests. The penguin only sees what you paste into it while its window has focus.
+
+## Safe with anti-cheat
+
+Penguin's Helper is built to stay out of trouble with kernel anti-cheat such as Riot Vanguard. It uses no native modules, no global hotkeys or keyboard/mouse hooks, no simulated input, no screen capture, and never touches other processes. It is a plain Electron window, the same runtime Discord and VS Code use. Contributions must keep it that way.
+
+## Project layout
+
+| File | What it does |
+|---|---|
+| `main.js` | Electron main process: the always-on-top window, click-through, clipboard reads and writes |
+| `preload.js` | The small API the page can call (`window.penguin`) |
+| `index.html` | The penguin (inline SVG), its animations, and the clipboard panel |
+| `history.js` | Adds entries to the clipboard list (newest first, no duplicates, capped at 50) |
+| `test.js` | Tests for `history.js`, run with `npm test` |
+
+## Credits
+
+The penguin is based on a hoodie-penguin drawing the author painted on a tote bag.
+
+## License
+
+[MIT](LICENSE)
