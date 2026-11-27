@@ -47,9 +47,25 @@
   kbd { display: inline-block; padding: 1px 6px; margin: 0 1px; border-radius: 5px; background: #fff; color: var(--ink);
     box-shadow: 0 0 0 1px var(--string), 0 1.5px 0 var(--string); font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.5; }
 
-  #toast { position: absolute; left: 50%; bottom: 12px; transform: translate(-50%, 4px); padding: 5px 12px; border-radius: 999px;
-    background: var(--ink); color: #fff; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; }
+  #toast { position: absolute; left: 50%; bottom: 50px; transform: translate(-50%, 4px); padding: 5px 12px; border-radius: 14px;
+    background: var(--ink); color: #fff; font-size: 12px; width: max-content; max-width: 250px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  #gfoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px 10px 14px;
+    border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  #gbtn { border: 0; border-radius: 8px; padding: 4px 10px; background: #fff; cursor: pointer; font-weight: 600; font-size: 12px;
+    box-shadow: 0 0 0 1px var(--string); flex: none; }
+  #gbtn:hover { box-shadow: 0 0 0 1px var(--ink); }
+  #gbtn:disabled { opacity: .5; cursor: default; }
+
+  /* reminder: a small speech bubble from the penguin, click to dismiss */
+  #bubble { display: none; position: relative; max-width: 236px; margin: 0 12px 12px 0; padding: 10px 14px 11px; text-align: left; cursor: pointer;
+    background: rgba(248, 251, 255, .94); border: 1px solid #fff; border-radius: 16px; box-shadow: 0 0 0 1px var(--line), 0 6px 18px rgba(27, 27, 34, .16); }
+  #bubble::after { content: ""; position: absolute; right: 38px; bottom: -10px; width: 18px; height: 9px; background: rgba(248, 251, 255, .94);
+    clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  body.bubbling #bubble { display: block; animation: open .18s ease-out; transform-origin: calc(100% - 47px) 100%; }
+  #b-label { display: block; color: var(--hood); font-weight: 600; font-size: 12px; }
+  #b-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; font-size: 13px; }
   #penguin { width: 110px; height: 110px; cursor: pointer; border: 0; background: none; padding: 0; }
   /* walking away: waddle fast and slide off to the right, then only the peek tab is left */
   /* turn first (face slides toward the exit, white mask a bit less for depth), then walk */
@@ -73,7 +89,9 @@
   #peek span { position: absolute; left: 5px; top: 16px; width: 9px; height: 11px; border-radius: 50%; background: #fffaf2; }
   #peek span::after { content: ""; position: absolute; left: 2px; top: 3px; width: 3px; height: 4.5px; border-radius: 50%; background: var(--ink); }
   #peek:hover { filter: brightness(1.1); }
-  body.away #penguin, body.away #panel { display: none; }
+  #peek.alert { animation: alert 1.2s ease-in-out infinite; } /* a reminder is waiting */
+  @keyframes alert { 50% { filter: brightness(1.45); } }
+  body.away #penguin, body.away #panel, body.away #bubble { display: none; }
   body.away #peek { display: block; }
   #penguin.bounce { animation: bounce .35s; }
   @keyframes bounce { 50% { transform: translateY(-12px); } }
@@ -116,8 +134,10 @@
       <button class="icon" id="close" title="Close" aria-label="Close clipboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
     </header>
     <div id="items"></div>
+    <footer id="gfoot"><span id="gstate">Get deadline reminders from Google</span><button id="gbtn">Connect</button></footer>
     <div id="toast" role="status"></div>
   </div>
+  <button id="bubble" aria-live="polite" title="Click to dismiss"><span id="b-label"></span><span id="b-title"></span></button>
   <button id="penguin" title="Click me, then Ctrl+V" aria-label="Open clipboard">
     <!-- Based on the user's own hoodie-penguin tote bag drawing. -->
     <svg viewBox="0 0 100 100" width="110" height="110" aria-hidden="true">
@@ -205,7 +225,7 @@
   const toast = (m) => {
     const t = $('#toast'); clearTimeout(toastTimer);
     t.textContent = m || ''; t.classList.toggle('show', !!m);
-    if (m) toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+    if (m) toastTimer = setTimeout(() => t.classList.remove('show'), 1400 + 45 * m.length);
   };
 
   function render(list) {
@@ -234,9 +254,52 @@
     });
   }
 
+  const bounce = () => { const p = $('#penguin'); p.classList.remove('bounce'); void p.offsetWidth; p.classList.add('bounce'); };
+
+  // Reminders queue up and show one bubble at a time, only while the penguin stands idle on screen.
+  const reminders = [];
+  let current = null;
+  const showNext = async () => {
+    const c = document.body.classList;
+    if (current || !reminders.length || ['open', 'away', 'leaving', 'walk-in', 'walk-out'].some((k) => c.contains(k))) return;
+    current = reminders.shift();
+    $('#b-label').textContent = current.label; $('#b-title').textContent = current.title;
+    await penguin.bubble(true);
+    c.add('bubbling'); bounce();
+  };
+  const hideBubble = async (keep) => {
+    if (!current) return;
+    if (keep) reminders.unshift(current);
+    current = null; document.body.classList.remove('bubbling');
+  };
+  $('#bubble').onclick = async () => { await hideBubble(false); await penguin.bubble(false); setTimeout(showNext, 400); };
+  penguin.onRemind((r) => {
+    reminders.push(r);
+    if (document.body.classList.contains('away')) $('#peek').classList.add('alert');
+    showNext();
+  });
+
   const toggle = async () => {
+    await hideBubble(true); // opening the panel puts the reminder back in line
     document.body.classList.toggle('open', await penguin.toggle());
     toast('');
+    showNext();
+  };
+
+  const setGoogle = (on) => {
+    $('#gstate').textContent = on ? 'Deadline reminders are on' : 'Get deadline reminders from Google';
+    $('#gbtn').textContent = on ? 'Disconnect' : 'Connect';
+    $('#gbtn').dataset.on = on ? '1' : '';
+  };
+  penguin.googleStatus().then(setGoogle);
+  penguin.onGoogle(setGoogle);
+  $('#gbtn').onclick = async () => {
+    const b = $('#gbtn');
+    if (b.dataset.on) { await penguin.googleDisconnect(); setGoogle(false); toast('Disconnected from Google'); return; }
+    b.disabled = true; toast('Finish signing in in your browser');
+    const { error } = await penguin.googleConnect();
+    b.disabled = false;
+    if (error) toast(error); else { setGoogle(true); toast('Connected to Google'); }
   };
   $('#penguin').onclick = toggle;
 
@@ -262,16 +325,18 @@
   });
   const cls = document.body.classList;
   $('#hide').onclick = async () => {
+    cls.add('leaving'); await hideBubble(true);
     if (cls.contains('open')) await toggle();
     $('#penguin').classList.remove('bounce'); // its animation would override the walk
     cls.add('walk-out'); await walkEnd();
     await penguin.hide();
-    cls.add('away'); cls.remove('walk-out');
+    cls.add('away'); cls.remove('walk-out', 'leaving');
   };
   $('#peek').onclick = async () => {
     cls.add('walk-in'); cls.remove('away');
     await penguin.show();
     await walkEnd(); cls.remove('walk-in');
+    $('#peek').classList.remove('alert'); showNext();
   };
   $('#quit').onclick = () => penguin.quit();
 
@@ -281,7 +346,7 @@
     ev.preventDefault();
     const { list, error } = await penguin.paste();
     render(list); toast(error || 'Added');
-    const p = $('#penguin'); p.classList.remove('bounce'); void p.offsetWidth; p.classList.add('bounce');
+    bounce();
   });
 
   penguin.list().then(render);
